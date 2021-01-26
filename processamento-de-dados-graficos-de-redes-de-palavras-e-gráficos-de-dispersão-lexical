@@ -1,0 +1,234 @@
+library(stringr)
+library(ggplot2)
+library(tidytext)
+library(dplyr)
+library(readr)
+library(tidyverse)
+library(tm)
+library(tidyr)
+library(quanteda)
+
+# Lendo o corpus
+texto <-read.csv("Todos_os_textos_4.txt")
+
+# Criando stopwords
+stopword <- c("nentão", "melhor","outras", "aí", "nele", "boa", "alguma", "algumas", "desde", "novamente", "logo", "alguns", "fico", "talvez", "alguém", "ficou", "n_", "n-", "claro", "menos", "fiquei", "tá", "disso", "nbem", "nah", "nnão", "jeito", "fica", "vamos", "meio", "prá", "dá", "nmas", "to", "the", "né", "nque",
+              "parte", "forma", "qualquer", "ficar", "faz", "quer", "realmente", "neu", "vez", "vezes", "ah", "nunca", "fazer", "demais", "dizer", "disse", "muitas", "voce", "estar", "sabe", "n", "bem", "ai", "mim", "tanto", "nada", "outra", "havia", "pouco", "pouca", "poucos", "poucas", "pode", "outro", 
+              "outros", "vou", "vai", "vem", "tudo", "todos", "todo", "toda", "todas", "aqui", "lá", 
+              "sobre", "ainda", "assim", "pra", "para", "cada", "tão", "então", "agora", "ali", "pois", "sim", "apenas", 
+              "onde", "tambem", "desse", "dessa", "desses", "dessas", "muito", "muita", "sendo", "algo", "e","é", "lá", 
+              "a","d","as","la","ia", "ja", "so", "sao", "entao", "ate", "ne", "rs", "ha", "nao", "então", "vc")
+
+# Separando o corpus em diferentes intervalos (Blogs)
+Blog1 <- texto[1:18, ]
+Blog2 <- texto[19:34, ]
+Blog3 <- texto[35:57, ]
+Blog4 <- texto[57:434, ]
+
+#Colapsando o texto em uma única linha e colocando em minúsculas
+rainha <- paste(texto, collapse=" ") 
+rainha.l.total<-char_tolower(rainha)
+
+rainha.1 <- paste(Blog1, collapse=" ")
+rainha.l.1<-char_tolower(rainha.1)
+
+rainha.2 <- paste(Blog2, collapse=" ") 
+rainha.l.2<-char_tolower(rainha.2)
+
+rainha.3 <- paste(Blog3, collapse=" ") 
+rainha.l.3<-char_tolower(rainha.3)
+
+rainha.4 <- paste(Blog4, collapse=" ") 
+rainha.l.4<-char_tolower(rainha.4)
+
+
+#Descobrindo o número de tokens de cada Blog
+
+ntoken(char_tolower(rainha.l.total), remove_punct = TRUE)
+ntoken(char_tolower(rainha.l.1), remove_punct = TRUE)
+ntoken(char_tolower(rainha.l.2), remove_punct = TRUE)
+ntoken(char_tolower(rainha.l.3), remove_punct = TRUE)
+ntoken(char_tolower(rainha.l.4), remove_punct = TRUE)
+
+# PLOTANDO REDE DE PALAVRAS DO BLOG 1 
+
+#Encontrando as dez palavras mais frequentes e salvando-as em uma dataframe
+rainha.dfm.1 <- dfm(rainha.l.1, remove_punct = TRUE) #Montando uma dfm 
+textstat_frequency(rainha.dfm.1, n = 10) #textstat_frequency dá as palavras mais frequentes
+rainha.WL.1 <- textstat_frequency(rainha.dfm.2)
+
+#Removendo pontuação, letras maiúsculas e stopwords
+rainha.mp.1 <- rainha.l.1%>%
+  tokens(remove_punct = TRUE) %>%
+  tokens_tolower() %>%
+  tokens_remove(pattern = c(stopwords("portuguese"), stopword, padding = FALSE))
+
+#Criando fcm (tabela que compara as ocorrências de palavras juntas)
+rainha.fcm.1 <- fcm(rainha.mp.1, context = "window", tri = FALSE)
+top.rainha.1 <- names(topfeatures(rainha.fcm.1, 55))
+
+#(Finalmente) plotando a rede de palavras
+fcm_select(rainha.fcm.1, pattern = top.rainha.1) %>%
+  textplot_network()
+
+
+
+# PLOTANDO REDE DE PALAVRAS DO BLOG 2
+
+#Encontrando as dez palavras mais frequentes e salvando-as em uma dataframe
+rainha.dfm.2 <- dfm(rainha.l.2, remove_punct = TRUE) #Montando uma dfm 
+textstat_frequency(rainha.dfm.2, n = 10) #textstat_frequency dá as palavras mais frequentes
+rainha.WL.2 <- textstat_frequency(rainha.dfm.2)
+
+#Removendo pontuação, letras maiúsculas e stopwords
+rainha.mp.2 <- rainha.l.2%>%
+  tokens(remove_punct = TRUE) %>%
+  tokens_tolower() %>%
+  tokens_remove(pattern = c(stopwords("portuguese"), stopword, padding = FALSE))
+
+#Criando fcm (tabela que compara as ocorrências de palavras juntas)
+rainha.fcm.2 <- fcm(rainha.mp.2, context = "window", tri = FALSE)
+top.rainha.2 <- names(topfeatures(rainha.fcm.2, 55))
+
+#(Finalmente) plotando a rede de palavras
+fcm_select(rainha.fcm.2, pattern = top.rainha.2) %>%
+  textplot_network()
+
+
+# PLOTANDO REDE DE PALAVRAS DO BLOG 3
+
+#Encontrando as dez palavras mais frequentes e salvando-as em uma dataframe
+rainha.dfm.3 <- dfm(rainha.l.3, remove_punct = TRUE) #Montando uma dfm 
+textstat_frequency(rainha.dfm.3, n = 10) #textstat_frequency dá as palavras mais frequentes
+rainha.WL.3 <- textstat_frequency(rainha.dfm.3)
+
+#Removendo pontuação, letras maiúsculas e stopwords
+rainha.mp.3 <- rainha.l.3%>%
+  tokens(remove_punct = TRUE) %>%
+  tokens_tolower() %>%
+  tokens_remove(pattern = c(stopwords("portuguese"), stopword, padding = FALSE))
+
+#Criando fcm (tabela que compara as ocorrências de palavras juntas)
+rainha.fcm.3 <- fcm(rainha.mp.3, context = "window", tri = FALSE)
+top.rainha.3 <- names(topfeatures(rainha.fcm.3, 55))
+
+#(Finalmente) plotando a rede de palavras
+fcm_select(rainha.fcm.3, pattern = top.rainha.3) %>%
+  textplot_network()
+
+
+# PLOTANDO REDE DE PALAVRAS DO BLOG 4
+
+#Encontrando as dez palavras mais frequentes e salvando-as em uma dataframe
+rainha.dfm.4 <- dfm(rainha.l.4, remove_punct = TRUE) #Montando uma dfm 
+textstat_frequency(rainha.dfm.4, n = 10) #textstat_frequency dá as palavras mais frequentes
+rainha.WL.4 <- textstat_frequency(rainha.dfm.4)
+
+#Removendo pontuação, letras maiúsculas e stopwords
+rainha.mp.4 <- rainha.l.4%>%
+  tokens(remove_punct = TRUE) %>%
+  tokens_tolower() %>%
+  tokens_remove(pattern = c(stopwords("portuguese"), stopword, padding = FALSE))
+
+#Criando fcm (tabela que compara as ocorrências de palavras juntas)
+rainha.fcm.4 <- fcm(rainha.mp.4, context = "window", tri = FALSE)
+top.rainha.4 <- names(topfeatures(rainha.fcm.4, 55))
+
+#(Finalmente) plotando a rede de palavras
+fcm_select(rainha.fcm.4, pattern = top.rainha.4) %>%
+  textplot_network()
+
+
+# PLOTANDO GRÁFICOS DE DISPERSÃO LEXICAL
+
+#Gráfico de dispersão lexical dos nomes de Elisabeth Andrade e seu companheiro ao longo do corpus
+textplot_xray(
+  kwic(rainha.l.total, pattern = "samia"),
+  kwic(rainha.l.total, pattern = "elisabeth"),
+  kwic(rainha.l.total, pattern = "beth"),
+  kwic(rainha.l.total, pattern = "ideiafix"),
+  kwic(rainha.l.total, pattern = "kelly"),
+  kwic(rainha.l.total, pattern = "roger"))+
+  ggtitle("Dispersão lexical dos nomes de Elisabeth Andrade e seu companheiro")
+
+
+#Gráfico de dispersão lexical dos nomes de Elisabeth Andrade ao longo do corpus
+textplot_xray(
+  kwic(rainha.l.total, pattern = "samia"),
+  kwic(rainha.l.total, pattern = "elisabeth"),
+  kwic(rainha.l.total, pattern = "beth"))+
+  ggtitle("Dispersão lexical dos nomes de Elisabeth ao longo do corpus")
+
+
+#Gráfico de dispersão lexical dos nomes de Elisabeth Andrade no Blog 1
+textplot_xray(
+  kwic(rainha.l.1, pattern = "samia"),
+  kwic(rainha.l.1, pattern = "beth"),
+  kwic(rainha.l.1, pattern = "elisabeth"))+
+  ggtitle("Dispersão lexical dos nomes de Elisabeth Andrade no Blog 1")
+
+
+#Gráfico de dispersão lexical dos nomes de Elisabeth Andrade no Blog 2
+textplot_xray(
+  kwic(rainha.l.2, pattern = "samia"),
+  kwic(rainha.l.2, pattern = "beth"),
+  kwic(rainha.l.2, pattern = "elisabeth"))+
+  ggtitle("Dispersão lexical dos nomes de Elisabeth Andrade no Blog 2")
+
+
+#Gráfico de dispersão lexical dos nomes de Elisabeth Andrade no Blog 3
+textplot_xray(
+  kwic(rainha.l.3, pattern = "samia"),
+  kwic(rainha.l.3, pattern = "beth"),
+  kwic(rainha.l.3, pattern = "elisabeth"))+
+  ggtitle("Dispersão lexical dos nomes de Elisabeth Andrade no Blog 3")
+
+
+#Gráfico de dispersão lexical dos nomes de Elisabeth Andrade no Blog 4
+textplot_xray(
+  kwic(rainha.l.4, pattern = "samia"),
+  kwic(rainha.l.4, pattern = "beth"),
+  kwic(rainha.l.4, pattern = "elisabeth"))+
+  ggtitle("Dispersão lexical dos nomes de Elisabeth Andrade no Blog 4")
+
+
+# Gráfico de dispersão lexical dos nomes do companheiro de Elisabeth Andrade ao longo do corpus
+textplot_xray(
+  kwic(rainha.l.total, pattern = "ideiafix"),
+  kwic(rainha.l.total, pattern = "kelly"),
+  kwic(rainha.l.total, pattern = "roger"))+
+  ggtitle("Dispersão lexical dos nomes do companheiro de Elisabeth Andrade ao longo do corpus")
+
+
+# Gráfico de dispersão lexical dos nomes do companheiro de Elisabeth Andrade no Blog 1
+textplot_xray(
+  kwic(rainha.l.1, pattern = "ideiafix"),
+  kwic(rainha.l.1, pattern = "kelly"),
+  kwic(rainha.l.1, pattern = "roger"))+
+  ggtitle("Dispersão lexical dos nomes do companheiro de Elisabeth Andrade no Blog 1")
+
+
+# Gráfico de dispersão lexical dos nomes do companheiro de Elisabeth Andrade no Blog 2
+textplot_xray(
+  kwic(rainha.l.2, pattern = "ideiafix"),
+  kwic(rainha.l.2, pattern = "kelly"),
+  kwic(rainha.l.2, pattern = "roger"))+
+  ggtitle("Dispersão lexical dos nomes do companheiro de Elisabeth Andrade no Blog 2")
+
+
+# Gráfico de dispersão lexical dos nomes do companheiro de Elisabeth Andrade no Blog 3
+textplot_xray(
+  kwic(rainha.l.3, pattern = "ideiafix"),
+  kwic(rainha.l.3, pattern = "kelly"),
+  kwic(rainha.l.3, pattern = "roger"))+
+  ggtitle("Dispersão lexical dos nomes do companheiro de Elisabeth Andrade no Blog 3")
+
+
+# Gráfico de dispersão lexical dos nomes do companheiro de Elisabeth Andrade no Blog 4
+textplot_xray(
+  kwic(rainha.l.4, pattern = "ideiafix"),
+  kwic(rainha.l.4, pattern = "kelly"),
+  kwic(rainha.l.4, pattern = "roger"))+
+  ggtitle("Dispersão lexical dos nomes do companheiro de Elisabeth Andrade no Blog 4")
+
+
