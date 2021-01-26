@@ -1,0 +1,200 @@
+library(tidytext)
+library(dplyr)
+library(readr)
+library(tidyverse)
+library(tm)
+library(tidyr)
+
+
+# Criando stopwords
+stopwords <- data.frame(read_csv("stop_port3.csv", col_names = FALSE),stringsAsFactors = FALSE)
+
+colnames(stopwords)<-"word"
+
+# Lendo dos arquivos
+texto <-read.csv("Todos_os_textos_4.txt")
+
+
+Blog1 <- texto[1:18, ]
+Blog2 <- texto[19:34, ]
+Blog3 <- texto[35:57, ]
+Blog4 <- texto[57:434, ]
+
+Blog5 <- texto[1:48, ]
+Blog6 <- texto[49:100, ]
+Blog7 <- texto[101:434, ]
+
+
+# Transformando blogs em dataframes
+blog1 <- data.frame(text = Blog1, stringsAsFactors = F)
+blog2 <- data.frame(text = Blog2, stringsAsFactors = F)
+blog3 <- data.frame(text = Blog3, stringsAsFactors = F)
+blog4 <- data.frame(text = Blog4, stringsAsFactors = F)
+blog5 <- data.frame(text = Blog5, stringsAsFactors = F)
+blog6 <- data.frame(text = Blog6, stringsAsFactors = F)
+blog7 <- data.frame(text = Blog7, stringsAsFactors = F)
+
+
+# Criando listas de palavras sem stopwords 
+blog1.tidy <- blog1 %>%
+  unnest_tokens(word, text.Texto)%>%
+  anti_join(stopwords, by="word")
+
+blog2.tidy <- blog2 %>%
+  unnest_tokens(word, text.Texto)%>%
+  anti_join(stopwords, by="word")
+
+blog3.tidy <- blog3 %>%
+  unnest_tokens(word, text.Texto)%>%
+  anti_join(stopwords, by="word")
+
+blog4.tidy <- blog4 %>%
+  unnest_tokens(word, text.Texto)%>%
+  anti_join(stopwords, by="word")
+
+blog5.tidy <- blog5 %>%
+  unnest_tokens(word, text.Texto)%>%
+  anti_join(stopwords, by="word")
+
+
+blog6.tidy <- blog6 %>%
+  unnest_tokens(word, text.Texto)%>%
+  anti_join(stopwords, by="word")
+
+
+blog7.tidy <- blog7 %>%
+  unnest_tokens(word, text.Texto)%>%
+  anti_join(stopwords, by="word")
+
+
+
+# Contando e ordenando as palavras
+blog1.l<- blog1.tidy%>%
+  count
+
+blog2.l<- blog2.tidy%>%
+  count(word, sort = TRUE)
+
+blog3.l<- blog3.tidy%>%
+  count(word, sort = TRUE)
+
+blog4.l <- blog4.tidy%>%
+  count(word, sort = TRUE)
+
+blog5.l <- blog5.tidy%>%
+  count(word, sort = TRUE)
+
+blog6.l <- blog6.tidy%>%
+  count(word, sort = TRUE)
+
+blog7.l <- blog7.tidy%>%
+  count(word, sort = TRUE)
+
+
+# COMPARAÇÃO ENTRE AS PERSONAS SAMIA, A RAINHA FRÁGIL E RAINHA FRÁGIL
+# Juntando os dois blogs
+frequencia.blogs <- bind_rows(mutate(blog5.tidy, Blog = "5"),
+                              mutate(blog6.tidy, Blog = "6")) %>%
+  mutate(word = str_extract(word, "[a-z']+")) %>%
+  count(Blog, word) %>% #Contar as palavras de cada livro
+  group_by(Blog) %>%
+  mutate(proportion = (n / sum(n))*100) %>%
+  select(-n) %>% #Apagar a coluna "n"
+  spread(Blog, proportion)
+
+# Plotagem de gráfico
+colnames(frequencia.blogs)<-c("word","Blog_5","Blog_6")
+
+ggplot(frequencia.blogs, aes(x = Blog_5, y = Blog_6,
+                             color = abs(Blog_5 - Blog_6))) +
+  geom_abline(color = "gray40", lty = 2) + #Cria linha no meio do gráfico
+  geom_jitter(alpha = 0.1, size = 2.5, width = 0.3, height = 0.3) +
+  geom_text(aes(label = word), check_overlap = TRUE, vjust = 1.5) +
+  scale_x_log10(labels = percent_format()) +
+  scale_y_log10(labels = percent_format()) +
+  scale_color_gradient(limits = c(0, 0.001),
+                       low = "darkslategray4", high = "gray75") +
+  theme(legend.position="none") +
+  labs(y = "Rainha Frágil", x = "Samia, a Rainha Frágil")
+
+
+# COMPARAÇÃO ENTRE AS PERSONAS SAMIA, A RAINHA FRÁGIL E BETH, A RAINHA FRÁGIL
+# Juntando os dois blogs
+frequencia.blogs <- bind_rows(mutate(blog5.tidy, Blog = "5"),
+                              mutate(blog7.tidy, Blog = "7")) %>%
+  mutate(word = str_extract(word, "[a-z']+")) %>%
+  count(Blog, word) %>% #Contar as palavras de cada livro
+  group_by(Blog) %>%
+  mutate(proportion = (n / sum(n))*100) %>%
+  select(-n) %>% #Apagar a coluna "n"
+  spread(Blog, proportion)
+
+# Plotagem de gráfico
+colnames(frequencia.blogs)<-c("word","Blog_5","Blog_7")
+
+ggplot(frequencia.blogs, aes(x = Blog_5, y = Blog_7,
+                             color = abs(Blog_5 - Blog_7))) +
+  geom_abline(color = "gray40", lty = 2) + #Cria linha no meio do gráfico
+  geom_jitter(alpha = 0.1, size = 2.5, width = 0.3, height = 0.3) +
+  geom_text(aes(label = word), check_overlap = TRUE, vjust = 1.5) +
+  scale_x_log10(labels = percent_format()) +
+  scale_y_log10(labels = percent_format()) +
+  scale_color_gradient(limits = c(0, 0.001),
+                       low = "darkslategray4", high = "gray75") +
+  theme(legend.position="none") +
+  labs(y = "Beth, A Rainha Frágil", x = "Samia, a Rainha Frágil")
+
+
+# COMPARAÇÃO ENTRE AS PERSONAS RAINHA FRÁGIL E BETH, A RAINHA FRÁGIL
+# Juntando os dois blogs
+frequencia.blogs <- bind_rows(mutate(blog6.tidy, Blog = "6"),
+                              mutate(blog7.tidy, Blog = "7")) %>%
+  mutate(word = str_extract(word, "[a-z']+")) %>%
+  count(Blog, word) %>% #Contar as palavras de cada livro
+  group_by(Blog) %>%
+  mutate(proportion = (n / sum(n))*100) %>%
+  select(-n) %>% #Apagar a coluna "n"
+  spread(Blog, proportion)
+
+# Plotagem de gráfico
+colnames(frequencia.blogs)<-c("word","Blog_6","Blog_7")
+
+ggplot(frequencia.blogs, aes(x = Blog_6, y = Blog_7,
+                             color = abs(Blog_6 - Blog_7))) +
+  geom_abline(color = "gray40", lty = 2) + #Cria linha no meio do gráfico
+  geom_jitter(alpha = 0.1, size = 2.5, width = 0.3, height = 0.3) +
+  geom_text(aes(label = word), check_overlap = TRUE, vjust = 1.5) +
+  scale_x_log10(labels = percent_format()) +
+  scale_y_log10(labels = percent_format()) +
+  scale_color_gradient(limits = c(0, 0.001),
+                       low = "darkslategray4", high = "gray75") +
+  theme(legend.position="none") +
+  labs(y = "Beth, A Rainha Frágil", x = "Rainha Frágil")
+
+
+# COMPARAÇÃO DOS BLOGS 1 E 4
+# Juntando os dois blogs
+frequencia.blogs <- bind_rows(mutate(blog1.tidy, Blog = "1"),
+                              mutate(blog4.tidy, Blog = "4")) %>%
+  mutate(word = str_extract(word, "[a-z']+")) %>%
+  count(Blog, word) %>% #Contar as palavras de cada livro
+  group_by(Blog) %>%
+  mutate(proportion = (n / sum(n))*100) %>%
+  select(-n) %>% #Apagar a coluna "n"
+  spread(Blog, proportion)
+
+# Plotagem de gráfico
+colnames(frequencia.blogs)<-c("word","Blog_1","Blog_4")
+
+ggplot(frequencia.blogs, aes(x = Blog_1, y = Blog_4,
+                             color = abs(Blog_1 - Blog_4))) +
+  geom_abline(color = "gray40", lty = 2) + #Cria linha no meio do gráfico
+  geom_jitter(alpha = 0.1, size = 2.5, width = 0.3, height = 0.3) +
+  geom_text(aes(label = word), check_overlap = TRUE, vjust = 1.5) +
+  scale_x_log10(labels = percent_format()) +
+  scale_y_log10(labels = percent_format()) +
+  scale_color_gradient(limits = c(0, 0.001),
+                       low = "darkslategray4", high = "gray75") +
+  theme(legend.position="none") +
+  labs(y = "Blog 4", x = "Blog 1")
+
