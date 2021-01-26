@@ -1,0 +1,64 @@
+library(rvest)
+library(purrr)
+library(xml2)
+library(readr)
+library(dplyr)
+library(stringr)
+
+#Função que pega apenas os posts da Rainha Frágil
+extract_articles_blogger_vermelho <- function(x){
+  tryCatch({
+    webpage <- read_html(x) #Lendo a página da web, em que x é o site a ser lido
+    text <- html_nodes(webpage, "td[class=tabela2]") %>% html_nodes("p")
+    i <- 0
+    pular_texto <- FALSE
+    article <- ""
+    for (p in text){
+      if (i==0){
+        i <- 1
+      }
+      else if(i==1){
+        autor <- html_nodes(p, "a[href]") %>% html_attr("href")
+        i <- 2
+        if(length(autor) > 1 && (str_detect(autor[2], "rainhafragil"))){
+          pular_texto <- FALSE
+        } else {
+          pular_texto <- TRUE
+        }
+      }
+      else if(i==2){
+        if (pular_texto==FALSE){
+          article <- str_c(article, html_text(p), "\n")
+        }
+        i <-3
+      }
+      else if(i==3){
+        i <-0
+      }
+    }
+    return(article) #Devolve a variável Article e deleta todo o resto
+  }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
+}
+
+#Looping que pega os posts de cada data
+df <- data.frame()
+df <- rbind(df, c("texto", "link"))
+for (mes in c("05", "06")){
+  rainha_link <- str_c("http://web.archive.org/web/20080111031550mp_/http://www.fragilreino.blogger.com.br/", "2004", "_", mes, "_01_archive.html")
+  cat("acessando link ", rainha_link, "\n")
+  text_links <- extract_articles_blogger_vermelho (rainha_link)
+  cat(text_links)
+  if (length(text_links) > 0){ 
+    df <- rbind(df, c( str_c(mes, "/", ano, ",", i), text_links))
+  }
+}
+
+#Corrigindo a dataframe
+df <- df %>% slice(2:n())
+colnames(df) <- c("Data", "Texto")
+
+#Salvando dataframe em arquivo csv
+write_csv(df, "rainha.todos.os.textos.vermelhos.csv")
+
+
+
