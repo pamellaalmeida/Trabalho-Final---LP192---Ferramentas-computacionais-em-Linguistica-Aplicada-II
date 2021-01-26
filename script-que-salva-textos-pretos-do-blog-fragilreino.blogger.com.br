@@ -1,0 +1,55 @@
+library(rvest)
+library(purrr)
+library(xml2)
+library(readr)
+library(dplyr)
+library(stringr)
+
+#Função que pega apenas os posts da Rainha Frágil
+extract_articles_blogger_preto <- function(x){
+  tryCatch({
+    webpage <- read_html(x) #Lendo a página da web, em que x é o site a ser lido
+    text <- html_nodes(webpage, ".cabecalho") %>% html_nodes(".corpo") #Pega todos os textos dos posts 
+    article <- "" 
+    i <- 1
+    autors <- html_nodes(webpage,"td[class=corpo]")%>% html_nodes("p[class=cabecalho]") #Pega cabeçalho e texto
+    cat("\n", length(text), "\n", length(autors))
+    for (autor in autors){
+      var <- html_nodes(autor, "span[class=corpo]") #Pega o corpo do texto
+      if (length(var)==0 && str_detect(html_text(autor), "Rainha")){ #Pega somente o cabeçalho e verifica o autor
+        article <- str_c(article, "\n", html_text(text[i])) #Copia o texto para a variável "article"
+      }
+      if (length(var)==0){
+        i <- i+1
+      } 
+    }
+    return(article) #Devolve a variável Article e deleta todo o resto
+  }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
+}
+
+#Looping que pega os posts de cada data
+df <- data.frame()
+df <- rbind(df, c("texto", "link"))
+text_links <- extract_articles_blogger_preto ("http://web.archive.org/web/20070430023653mp_/http://fragilreino.blogger.com.br/2002_12_01_archive.html")
+cat(text_links)
+if (length(text_links) > 0){ 
+  df <- rbind(df, c("12/2002/01", text_links))
+ }
+for(ano in c("2003", "2004")){
+  for (mes in c("02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12")){
+    rainha_link <- str_c("http://web.archive.org/web/20070430023601mp_/http://fragilreino.blogger.com.br/", ano, "_", mes, "_01_archive.html")
+    cat("acessando link ", rainha_link, "\n")
+    text_links <- extract_articles_blogger_preto (rainha_link)
+    cat(text_links)
+    if (length(text_links) > 0){ 
+      df <- rbind(df, c( str_c(mes, "/", ano), text_links))
+    }
+  }
+}
+
+#Corrigindo a dataframe
+newdf <- df[2:16, ]
+colnames(newdf) <- c("Data", "Texto")
+
+#Salvando dataframe em arquivo csv
+write.csv(newdf, "Textos do Blog Preto da Rainha Frágil.csv")
